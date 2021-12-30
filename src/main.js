@@ -5,8 +5,6 @@ import marketplaceAbi from "../contract/marketplace.abi.json"
 import erc20Abi from "../contract/erc20.abi.json"
 
 const ERC20_DECIMALS = 18
-const MPContractAddress = "0x4CA1C631Bbf3BEae9Fad54AdEDC2Fe07E19c44C3"
-const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
 let kit
 let contract
@@ -73,6 +71,11 @@ const getProducts = async function() {
   renderProducts()
 }
 
+// truncate description
+function truncateDescription(_description) {
+    return `${String(_description).substring(0, 250)}...` // this truncate the descriptions make the ui card focused
+}
+
 const getUserProducts = async function(ownerAddress) {
   const _productsLength = await contract.methods.getProductsLength().call()
   const _products = []
@@ -125,7 +128,7 @@ function productTemplate(_product) {
         <img src="${_product.image}" style="height: 200px; width: 100%; object-fit: cover;"/>
         <div class="card-body">
         <h3 class="card-text">${_product.name} <span class="d-inline-block text-truncate" style="max-width: 100px; font-size: medium; font-weight: 400;">by <a class="byReference" style="cursor: pointer; text-decoration: none;" id="${_product.index}">${_product.owner}</a> </span></h3>
-        <p class="card-text">${_product.description}</p>
+        <p class="card-text">${truncateDescription(_product.description)}</p>
         <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group">
             <button type="button" class="btn btn-sm btn-outline-secondary buyBtn" data-bs-toggle="modal"
@@ -145,7 +148,7 @@ function productTemplateSelf(_product) {
         <img src="${_product.image}" style="height: 200px; width: 100%; object-fit: cover;"/>
         <div class="card-body">
         <h3 class="card-text">${_product.name} <span class="d-inline-block text-truncate" style="max-width: 100px; font-size: medium; font-weight: 400;">by <a class="byReference" style="cursor: pointer; text-decoration: none;" id="${_product.index}">${_product.owner}</a> </span></h3>
-        <p class="card-text">${_product.description}</p>
+        <p class="card-text">${truncateDescription(_product.description)}</p>
         <div class="d-flex justify-content-between align-items-center">
             <button type="button" class="btn btn-sm btn-outline-secondary rentProduct" data-bs-toggle="modal"
             data-bs-target="#editModal" id="${_product.index}">Edit</button>
@@ -163,7 +166,7 @@ function productTemplateRented(_product) {
         <img src="${_product.image}" style="height: 200px; width: 100%; object-fit: cover;"/>
         <div class="card-body">
         <h3 class="card-text">${_product.name} <span class="d-inline-block text-truncate" style="max-width: 100px; font-size: medium; font-weight: 400;">by <a class="byReference" style="cursor: pointer; text-decoration: none;" id="${_product.index}">${_product.owner}</a> </span></h3>
-        <p class="card-text">${_product.description}</p>
+        <p class="card-text">${truncateDescription(_product.description)}</p>
         <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group">
             <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Rented</button>
@@ -242,11 +245,10 @@ document.querySelector("#show").addEventListener("click", async (e) => {
     document.getElementById("editProductName").value = products[editIndex].name
     document.getElementById("editImgUrl").value = products[editIndex].image
     document.getElementById("editProductDescription").value = products[editIndex].description
-    document.getElementById("editPrice").value = products[editIndex].price / 1000000000000000000
+    document.getElementById("editPrice").value = new BigNumber(products[editIndex].price).shiftedBy(ERC20_DECIMALS) // use big number instant of 1000000000000000000
   }
   if (e.target.className.includes("byReference")) {
     const ownerAddress = products[e.target.id].owner
-    console.log(ownerAddress);
     getUserProducts(ownerAddress)
   }
 })
