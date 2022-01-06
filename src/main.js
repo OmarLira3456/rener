@@ -1,12 +1,10 @@
 import Web3 from "web3"
-import { newKitFromWeb3 } from "@celo/contractkit"
+import {newKitFromWeb3} from "@celo/contractkit"
 import BigNumber from "bignumber.js"
 import marketplaceAbi from "../contract/marketplace.abi.json"
 import erc20Abi from "../contract/erc20.abi.json"
+import {cUSDContractAddress, ERC20_DECIMALS, MPContractAddress} from "./utils/constants";
 
-const ERC20_DECIMALS = 18
-const MPContractAddress = "0x4CA1C631Bbf3BEae9Fad54AdEDC2Fe07E19c44C3"
-const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
 let kit
 let contract
@@ -39,23 +37,22 @@ const connectCeloWallet = async function () {
 async function approve(_price) {
   const cUSDContract = new kit.web3.eth.Contract(erc20Abi, cUSDContractAddress)
 
-  const result = await cUSDContract.methods
-    .approve(MPContractAddress, _price)
-    .send({ from: kit.defaultAccount })
-  return result
+  return await cUSDContract.methods
+      .approve(MPContractAddress, _price)
+      .send({from: kit.defaultAccount})
+
 }
 
 const getBalance = async function () {
   const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
-  const cUSDBalance = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
-  document.querySelector("#balance").textContent = cUSDBalance
+  document.querySelector("#balance").textContent = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
 }
 
 const getProducts = async function() {
   const _productsLength = await contract.methods.getProductsLength().call()
   const _products = []
   for (let i = 0; i < _productsLength; i++) {
-    let _product = new Promise(async (resolve, reject) => {
+    let _product = new Promise(async (resolve) => {
       let p = await contract.methods.readProduct(i).call()
       resolve({
         index: i,
@@ -77,7 +74,7 @@ const getUserProducts = async function(ownerAddress) {
   const _productsLength = await contract.methods.getProductsLength().call()
   const _products = []
   for (let i = 0; i < _productsLength; i++) {
-    let _product = new Promise(async (resolve, reject) => {
+    let _product = new Promise(async (resolve) => {
       let p = await contract.methods.readProduct(i).call()
       resolve({
         index: i,
@@ -175,24 +172,24 @@ function productTemplateRented(_product) {
   `
 }
 
-function identiconTemplate(_address) {
-  const icon = blockies
-    .create({
-      seed: _address,
-      size: 8,
-      scale: 16,
-    })
-    .toDataURL()
-
-  return `
-  <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
-    <a href="https://alfajores-blockscout.celo-testnet.org/address/${_address}/transactions"
-        target="_blank">
-        <img src="${icon}" width="48" alt="${_address}">
-    </a>
-  </div>
-  `
-}
+// function identiconTemplate(_address) {
+//   const icon = blockies
+//     .create({
+//       seed: _address,
+//       size: 8,
+//       scale: 16,
+//     })
+//     .toDataURL()
+//
+//   return `
+//   <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
+//     <a href="https://alfajores-blockscout.celo-testnet.org/address/${_address}/transactions"
+//         target="_blank">
+//         <img src="${icon}" width="48" alt="${_address}">
+//     </a>
+//   </div>
+//   `
+// }
 
 function notification(_text) {
   document.querySelector(".alert").style.display = "block"
@@ -212,20 +209,20 @@ window.addEventListener("load", async () => {
 });
 
 document
-  .querySelector("#newProductBtn")
-  .addEventListener("click", async (e) => {
-    const params = [
-      document.getElementById("newProductName").value,
-      document.getElementById("newImgUrl").value,
-      document.getElementById("newProductDescription").value,
-      new Date(),
-      new BigNumber(document.getElementById("newPrice").value).shiftedBy(ERC20_DECIMALS).toString()
-    ]
-    notification(`⌛ Adding "${params[0]}"...`)
-    try {
-      const result = await contract.methods
-        .addProduct(...params)
-        .send({ from: kit.defaultAccount })
+    .querySelector("#newProductBtn")
+    .addEventListener("click", async () => {
+      const params = [
+        document.getElementById("newProductName").value,
+        document.getElementById("newImgUrl").value,
+        document.getElementById("newProductDescription").value,
+        new Date(),
+        new BigNumber(document.getElementById("newPrice").value).shiftedBy(ERC20_DECIMALS).toString()
+      ]
+      notification(`⌛ Adding "${params[0]}"...`)
+      try {
+        await contract.methods
+            .addProduct(...params)
+            .send({from: kit.defaultAccount})
     } catch (error) {
       notification(`⚠️ ${error}.`)
     }
@@ -251,11 +248,11 @@ document.querySelector("#show").addEventListener("click", async (e) => {
   }
 })
 
-document.getElementById("getAll").addEventListener("click", async (e) => {
+document.getElementById("getAll").addEventListener("click", async () => {
   getProducts()
 })
 
-document.querySelector("#editProductBtn").addEventListener("click", async (e) => {
+document.querySelector("#editProductBtn").addEventListener("click", async () => {
   const params = [
     editIndex,
     document.getElementById("editProductName").value,
@@ -266,9 +263,9 @@ document.querySelector("#editProductBtn").addEventListener("click", async (e) =>
   ]
   notification(`⌛ Editing "${params[1]}"...`)
   try {
-    const result = await contract.methods
-      .editProduct(...params)
-      .send({ from: kit.defaultAccount })
+    await contract.methods
+        .editProduct(...params)
+        .send({from: kit.defaultAccount})
   } catch (error) {
     notification(`⚠️ ${error}.`)
   }
@@ -276,7 +273,7 @@ document.querySelector("#editProductBtn").addEventListener("click", async (e) =>
   getProducts()
 })
 
-document.querySelector("#rentar").addEventListener("click", async (e) => {
+document.querySelector("#rentar").addEventListener("click", async () => {
   const days = document.getElementById("days").value
 
   var actual = Date.parse(new Date());
@@ -297,9 +294,9 @@ document.querySelector("#rentar").addEventListener("click", async (e) => {
     }
     notification(`⌛ Awaiting payment for "${products[rentIndex].name}"...`)
     try {
-      const result = await contract.methods
-        .rentProduct(rentIndex, days, Math.floor(total + 1))
-        .send({ from: kit.defaultAccount })
+      await contract.methods
+          .rentProduct(rentIndex, days, Math.floor(total + 1))
+          .send({from: kit.defaultAccount})
       notification(`🎉 You successfully rented "${products[rentIndex].name}".`)
       getProducts()
       getBalance()
