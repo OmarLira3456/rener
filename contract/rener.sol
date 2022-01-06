@@ -29,8 +29,7 @@ interface IERC20Token {
 
 contract Rent {
     uint256 internal productsLength = 0;
-    address internal cUsdTokenAddress =
-        0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
     struct Product {
         address payable owner;
@@ -39,6 +38,7 @@ contract Rent {
         string description;
         string date;
         uint256 price;
+        uint256 condition;
     }
 
     mapping(address => uint256[]) internal created;
@@ -52,7 +52,8 @@ contract Rent {
         string memory _image,
         string memory _description,
         string memory _date,
-        uint256 _price
+        uint256 _price,
+        uint256 _condition
     ) public {
         products[productsLength] = Product(
             payable(msg.sender),
@@ -60,7 +61,8 @@ contract Rent {
             _image,
             _description,
             _date,
-            _price
+            _price,
+            _condition
         );
         created[msg.sender].push(productsLength);
         productsLength++;
@@ -72,15 +74,18 @@ contract Rent {
         string memory _image,
         string memory _description,
         string memory _date,
-        uint256 _price
+        uint256 _price,
+        uint256 _condition
     ) public {
+        require(msg.sender == products[_index].owner, "Only the owner of this product can edit this produc");
         products[_index] = Product(
             payable(msg.sender),
             _name,
             _image,
             _description,
             _date,
-            _price
+            _price,
+            _condition
         );
     }
 
@@ -93,6 +98,7 @@ contract Rent {
             string memory,
             string memory,
             string memory,
+            uint256,
             uint256
         )
     {
@@ -102,7 +108,8 @@ contract Rent {
             products[_index].image,
             products[_index].description,
             products[_index].date,
-            products[_index].price
+            products[_index].price,
+            products[_index].condition
         );
     }
 

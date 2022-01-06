@@ -25,6 +25,11 @@
 				"internalType": "uint256",
 				"name": "_price",
 				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_condition",
+				"type": "uint256"
 			}
 		],
 		"name": "addProduct",
@@ -62,6 +67,11 @@
 			{
 				"internalType": "uint256",
 				"name": "_price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_condition",
 				"type": "uint256"
 			}
 		],
@@ -155,6 +165,11 @@
 				"internalType": "string",
 				"name": "",
 				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
