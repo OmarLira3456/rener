@@ -1,11 +1,11 @@
 import Web3 from "web3"
 import { newKitFromWeb3 } from "@celo/contractkit"
 import BigNumber from "bignumber.js"
-import marketplaceAbi from "../contract/marketplace.abi.json"
+import marketplaceAbi from "../contract/rener.abi.json"
 import erc20Abi from "../contract/erc20.abi.json"
 
 const ERC20_DECIMALS = 18
-const MPContractAddress = "0x4CA1C631Bbf3BEae9Fad54AdEDC2Fe07E19c44C3"
+const MPContractAddress = "0x96Ace1Ad99953eF1189e697d8be5482B374bb664"
 const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
 let kit
